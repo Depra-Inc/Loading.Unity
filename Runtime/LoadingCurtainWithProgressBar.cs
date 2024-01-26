@@ -25,16 +25,16 @@ namespace Depra.Loading
 			}
 
 			_viewModel.Progress.Changed -= OnProgressChanged;
-			_viewModel.Description.Changed += OnDescriptionChanged;
+			_viewModel.Description.Changed -= OnDescriptionChanged;
 		}
 
 		public override void Initialize(LoadingCurtainViewModel viewModel)
 		{
-			_viewModel = viewModel;
 			var rootElement = _document.rootVisualElement;
 			_descriptionLabel = rootElement.Q<Label>(_descriptionName);
 			_progressBar = rootElement.Q<ProgressBar>(_progressBarName);
 
+			_viewModel = viewModel;
 			_viewModel.Progress.Changed += OnProgressChanged;
 			_viewModel.Description.Changed += OnDescriptionChanged;
 		}

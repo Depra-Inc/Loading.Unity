@@ -40,7 +40,11 @@ namespace Depra.Loading
 				await operation.Load(OnProgress, token);
 			}
 
-			Object.Destroy(_view.gameObject);
+			if (_view != null)
+			{
+				Object.Destroy(_view.gameObject);
+			}
+
 			return;
 
 			void OnProgress(float progress) => viewModel.Progress.Value = progress;

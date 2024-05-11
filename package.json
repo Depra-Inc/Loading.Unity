@@ -1,12 +1,11 @@
 {
 	"name": "com.depra.loading.unity",
-	"version": "0.0.6",
+	"version": "0.0.7",
 	"displayName": "Depra.Loading",
 	"description": "",
 	"unity": "2022.3",
 	"license": "Apache-2.0",
 	"keywords": [
-		"depra",
 		"unity",
 		"loading",
 		"curtain"

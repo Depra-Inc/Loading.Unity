@@ -21,51 +21,34 @@ namespace Depra.Loading
 		private LoadingCurtainViewRoot _original;
 		private LoadingCurtainViewModel _viewModel;
 
-		public event Action Completed;
-
 		public OverlayLoadingCurtain(IAssetFile<LoadingCurtainViewRoot> assetFile) => _assetFile = assetFile;
 
-
-		public async Task Load(IEnumerable<ILoadingOperation> operations, CancellationToken token)
+		public async Task Load(IEnumerable<ILoadingOperation> operations, CancellationToken cancellationToken)
 		{
 			if (_original == null)
 			{
-				_original = await _assetFile.LoadAsync(cancellationToken: token);
+				_original = await _assetFile.LoadAsync(cancellationToken: cancellationToken);
 			}
 
 			_viewModel = new LoadingCurtainViewModel();
-			_viewModel.Completed += OnCompleted;
-
 			_view = Object.Instantiate(_original);
 			_view.Initialize(_viewModel);
 
 			foreach (var operation in operations)
 			{
-				_viewModel.Initialize(operation);
-				await operation.Load(OnProgress, token);
+				_viewModel.Description.Value = operation.Description;
+				await operation.Load(OnProgress, cancellationToken);
 			}
 
+			await WaitForViewClosed(cancellationToken);
+		}
+
+		public Task Unload(CancellationToken cancellationToken)
+		{
+			_viewModel?.Dispose();
 			if (_view != null)
 			{
 				Object.Destroy(_view.gameObject);
-			}
-
-			return;
-
-			void OnProgress(float progress) => _viewModel.Progress.Value = progress;
-		}
-
-		public void Unload()
-		{
-			if (_viewModel != null)
-			{
-				_viewModel.Completed -= OnCompleted;
-				_viewModel.Dispose();
-			}
-
-			if (_original)
-			{
-				_original = null;
 			}
 
 			try
@@ -76,8 +59,23 @@ namespace Depra.Loading
 			{
 				Debug.LogError(exception);
 			}
+
+			return Task.CompletedTask;
 		}
 
-		private void OnCompleted() => Completed?.Invoke();
+		private void OnProgress(float progress) => _viewModel.Progress.Value = progress;
+
+		private async Task WaitForViewClosed(CancellationToken token)
+		{
+			while (_viewModel.NeedToClose == false)
+			{
+				if (token.IsCancellationRequested)
+				{
+					throw new TaskCanceledException();
+				}
+
+				await Task.Yield();
+			}
+		}
 	}
 }

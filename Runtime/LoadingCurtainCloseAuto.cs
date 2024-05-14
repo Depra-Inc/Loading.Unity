@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Depra.Loading
 {
-	internal sealed class LoadingCurtainAutoComplete : LoadingCurtainComplete
+	internal sealed class LoadingCurtainCloseAuto : LoadingCurtainClose
 	{
 		private LoadingCurtainViewModel _viewModel;
 
@@ -27,7 +27,7 @@ namespace Depra.Loading
 		{
 			if (Mathf.Approximately(progress, 1))
 			{
-				_viewModel.Complete();
+				_viewModel.Close();
 			}
 		}
 	}

@@ -6,5 +6,5 @@ using UnityEngine;
 namespace Depra.Loading
 {
 	[DisallowMultipleComponent]
-	public abstract class LoadingCurtainComplete : LoadingCurtainView { }
+	public abstract class LoadingCurtainClose : LoadingCurtainView { }
 }

@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 namespace Depra.Loading
 {
 	[RequireComponent(typeof(UIDocument))]
-	internal sealed class LoadingContinueButton : LoadingCurtainComplete
+	internal sealed class LoadingContinueButton : LoadingCurtainClose
 	{
 		[SerializeField] private string _bindingPath = "ClickToContinue";
 
@@ -47,7 +47,7 @@ namespace Depra.Loading
 		private void OnClicked()
 		{
 			_button.SetEnabled(false);
-			_viewModel.Complete();
+			_viewModel.Close();
 		}
 
 		private void OnProgressChanged(float progress)

@@ -25,15 +25,13 @@ namespace Depra.Loading
 		public async Task Load(IEnumerable<ILoadingOperation> operations, CancellationToken token)
 		{
 			await LoadScene(token);
-			_overlayCurtain.Completed += Unload;
 			await _overlayCurtain.Load(operations, token);
 		}
 
-		public void Unload()
+		public async Task Unload(CancellationToken cancellationToken)
 		{
-			_overlayCurtain.Completed -= Unload;
-			_overlayCurtain.Unload();
-			_ = UnloadScene(CancellationToken.None);
+			await _overlayCurtain.Unload(cancellationToken);
+			await UnloadScene(cancellationToken);
 		}
 
 		private async Task LoadScene(CancellationToken token)

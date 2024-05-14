@@ -12,9 +12,7 @@ namespace Depra.Loading
 		public readonly IReactiveProperty<float> Progress = new ReactiveProperty<float>();
 		public readonly IReactiveProperty<OperationDescription> Description = new ReactiveProperty<OperationDescription>();
 
-		public event Action Completed;
-
-		public void Initialize(ILoadingOperation operation) => Description.Value = operation.Description;
+		internal bool NeedToClose { get; private set; }
 
 		public void Dispose()
 		{
@@ -22,10 +20,6 @@ namespace Depra.Loading
 			Description.Dispose();
 		}
 
-		public void Complete()
-		{
-			Progress.Value = 1f;
-			Completed?.Invoke();
-		}
+		public void Close() => NeedToClose = true;
 	}
 }

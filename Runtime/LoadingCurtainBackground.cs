@@ -17,7 +17,7 @@ namespace Depra.Loading
 		{
 			var style = GetComponent<UIDocument>().rootVisualElement.style;
 			style.backgroundImage = new StyleBackground(_image);
-			style.backgroundColor = _color;
+			style.unityBackgroundImageTintColor = _color;
 		}
 	}
 }

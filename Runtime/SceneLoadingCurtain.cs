@@ -36,14 +36,14 @@ namespace Depra.Loading
 
 		private async Task LoadScene(CancellationToken token)
 		{
-			var loadSceneOperation = SceneManager.LoadSceneAsync(_sceneName, LoadSceneMode.Additive);
-			if (loadSceneOperation == null)
+			var operation = SceneManager.LoadSceneAsync(_sceneName, LoadSceneMode.Additive);
+			if (operation == null)
 			{
 				throw new InvalidOperationException($"Scene '{_sceneName}' not found.");
 			}
 
-			loadSceneOperation.allowSceneActivation = true;
-			while (loadSceneOperation.isDone == false)
+			SceneManager.sceneLoaded += OnSceneLoaded;
+			while (operation.isDone == false)
 			{
 				if (token.IsCancellationRequested)
 				{
@@ -56,13 +56,13 @@ namespace Depra.Loading
 
 		private async Task UnloadScene(CancellationToken token)
 		{
-			var unloadSceneOperation = SceneManager.UnloadSceneAsync(_sceneName);
-			if (unloadSceneOperation == null)
+			var operation = SceneManager.UnloadSceneAsync(_sceneName);
+			if (operation == null)
 			{
 				throw new InvalidOperationException($"Scene '{_sceneName}' not found.");
 			}
 
-			while (unloadSceneOperation.isDone == false)
+			while (operation.isDone == false)
 			{
 				if (token.IsCancellationRequested)
 				{
@@ -70,6 +70,15 @@ namespace Depra.Loading
 				}
 
 				await Task.Yield();
+			}
+		}
+
+		private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+		{
+			SceneManager.sceneLoaded -= OnSceneLoaded;
+			if (scene.IsValid())
+			{
+				SceneManager.SetActiveScene(scene);
 			}
 		}
 	}

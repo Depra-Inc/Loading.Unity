@@ -10,7 +10,7 @@ namespace Depra.Loading
 	[RequireComponent(typeof(UIDocument))]
 	public sealed class LoadingCurtainDescription : LoadingCurtainView
 	{
-		[SerializeField] private string _name = "Description";
+		[SerializeField] private string _bindingPath = "Description";
 
 		private UIDocument _document;
 		private Label _descriptionLabel;
@@ -26,12 +26,9 @@ namespace Depra.Loading
 
 		public override void Initialize(LoadingCurtainViewModel viewModel)
 		{
-			var document = GetComponent<UIDocument>();
-			var rootElement = document.rootVisualElement;
-			_descriptionLabel = rootElement.Q<Label>(_name);
-
 			_viewModel = viewModel;
 			_viewModel.Description.Changed += OnDescriptionChanged;
+			_descriptionLabel = GetComponent<UIDocument>().rootVisualElement.Q<Label>(_bindingPath);
 		}
 
 		private void OnDescriptionChanged(OperationDescription description) =>

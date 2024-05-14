@@ -6,13 +6,13 @@ using UnityEngine.UIElements;
 
 namespace Depra.Loading
 {
-	[DisallowMultipleComponent]
 	[RequireComponent(typeof(UIDocument))]
-	public sealed class LoadingCurtainProgressBar : LoadingCurtainView
+	public sealed class LoadingCurtainProgressLabel : LoadingCurtainView
 	{
-		[SerializeField] private string _bindingPath = "ProgressBar";
+		[SerializeField] private string _format = "{0}%";
+		[SerializeField] private string _bindingPath = "ProgressText";
 
-		private ProgressBar _progressBar;
+		private Label _label;
 		private LoadingCurtainViewModel _viewModel;
 
 		private void OnDestroy()
@@ -27,9 +27,10 @@ namespace Depra.Loading
 		{
 			_viewModel = viewModel;
 			_viewModel.Progress.Changed += OnProgressChanged;
-			_progressBar = GetComponent<UIDocument>().rootVisualElement.Q<ProgressBar>(_bindingPath);
+			_label = GetComponent<UIDocument>().rootVisualElement.Q<Label>(_bindingPath);
 		}
 
-		private void OnProgressChanged(float progress) => _progressBar.value = progress;
+		private void OnProgressChanged(float value) =>
+			_label.text = string.Format(_format, Mathf.RoundToInt(value * 100));
 	}
 }

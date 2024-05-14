@@ -9,7 +9,7 @@ namespace Depra.Loading
 	[RequireComponent(typeof(UIDocument))]
 	internal sealed class LoadingContinueButton : LoadingCurtainComplete
 	{
-		[SerializeField] private string _name = "ClickToContinue";
+		[SerializeField] private string _bindingPath = "ClickToContinue";
 
 		private Button _button;
 		private LoadingCurtainViewModel _viewModel;
@@ -34,7 +34,7 @@ namespace Depra.Loading
 
 			var document = GetComponent<UIDocument>();
 			var rootElement = document.rootVisualElement;
-			_button = rootElement.Q<Button>(_name);
+			_button = rootElement.Q<Button>(_bindingPath);
 			if (_button == null)
 			{
 				return;

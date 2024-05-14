@@ -15,14 +15,10 @@ namespace Depra.Loading
 
 		public override void Initialize(LoadingCurtainViewModel viewModel)
 		{
-			if (_background == false)
+			if (_background)
 			{
-				return;
+				GetComponent<UIDocument>().rootVisualElement.style.backgroundImage = new StyleBackground(_background);
 			}
-
-			var document = GetComponent<UIDocument>();
-			var rootElement = document.rootVisualElement;
-			rootElement.style.backgroundImage = new StyleBackground(_background);
 		}
 	}
 }

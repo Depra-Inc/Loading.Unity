@@ -6,16 +6,24 @@ using UnityEngine;
 namespace Depra.Loading
 {
 	[DisallowMultipleComponent]
-	public sealed class LoadingCurtainViewRoot : LoadingCurtainView
+	public sealed class LoadingCurtainViewRoot : MonoBehaviour
 	{
 		[SerializeField] private LoadingCurtainView[] _views;
 
-		public override void Initialize(LoadingCurtainViewModel viewModel)
+		public void Initialize(LoadingCurtainViewModel viewModel)
 		{
 			foreach (var view in _views)
 			{
 				view.Initialize(viewModel);
 			}
 		}
+#if UNITY_EDITOR
+		[ContextMenu(nameof(Refill))]
+		private void Refill()
+		{
+			_views = GetComponentsInChildren<LoadingCurtainView>();
+			UnityEditor.EditorUtility.SetDirty(this);
+		}
+#endif
 	}
 }

@@ -1,10 +1,21 @@
-﻿using UnityEngine;
+﻿// SPDX-License-Identifier: Apache-2.0
+// © 2023-2024 Nikolay Melnikov <n.melnikov@depra.org>
+
+using UnityEngine;
 
 namespace Depra.Loading
 {
-	public sealed class LoadingCurtainAutoFinal : LoadingCurtainViewFinal
+	internal sealed class LoadingCurtainAutoComplete : LoadingCurtainComplete
 	{
 		private LoadingCurtainViewModel _viewModel;
+
+		private void OnDestroy()
+		{
+			if (_viewModel != null)
+			{
+				_viewModel.Progress.Changed -= OnProgressChanged;
+			}
+		}
 
 		public override void Initialize(LoadingCurtainViewModel viewModel)
 		{

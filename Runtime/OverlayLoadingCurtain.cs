@@ -19,10 +19,12 @@ namespace Depra.Loading
 
 		private LoadingCurtainViewRoot _view;
 		private LoadingCurtainViewRoot _original;
+		private LoadingCurtainViewModel _viewModel;
+
+		public event Action Completed;
 
 		public OverlayLoadingCurtain(IAssetFile<LoadingCurtainViewRoot> assetFile) => _assetFile = assetFile;
 
-		public LoadingCurtainViewModel ViewModel { get; private set; }
 
 		public async Task Load(IEnumerable<ILoadingOperation> operations, CancellationToken token)
 		{
@@ -31,13 +33,15 @@ namespace Depra.Loading
 				_original = await _assetFile.LoadAsync(cancellationToken: token);
 			}
 
-			ViewModel = new LoadingCurtainViewModel();
+			_viewModel = new LoadingCurtainViewModel();
+			_viewModel.Completed += OnCompleted;
+
 			_view = Object.Instantiate(_original);
-			_view.Initialize(ViewModel);
+			_view.Initialize(_viewModel);
 
 			foreach (var operation in operations)
 			{
-				ViewModel.Initialize(operation);
+				_viewModel.Initialize(operation);
 				await operation.Load(OnProgress, token);
 			}
 
@@ -48,12 +52,17 @@ namespace Depra.Loading
 
 			return;
 
-			void OnProgress(float progress) => ViewModel.Progress.Value = progress;
+			void OnProgress(float progress) => _viewModel.Progress.Value = progress;
 		}
 
 		public void Unload()
 		{
-			ViewModel.Dispose();
+			if (_viewModel != null)
+			{
+				_viewModel.Completed -= OnCompleted;
+				_viewModel.Dispose();
+			}
+
 			if (_original)
 			{
 				_original = null;
@@ -68,5 +77,7 @@ namespace Depra.Loading
 				Debug.LogError(exception);
 			}
 		}
+
+		private void OnCompleted() => Completed?.Invoke();
 	}
 }

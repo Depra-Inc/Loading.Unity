@@ -11,13 +11,18 @@ namespace Depra.Loading
 	public sealed class LoadingCurtainBackground : LoadingCurtainView
 	{
 		[SerializeField] private Sprite _image;
+		[SerializeField] private bool _colorize;
 		[SerializeField] private Color _color;
 
 		public override void Initialize(LoadingCurtainViewModel viewModel)
 		{
 			var style = GetComponent<UIDocument>().rootVisualElement.style;
 			style.backgroundImage = new StyleBackground(_image);
-			style.unityBackgroundImageTintColor = _color;
+
+			if (_colorize)
+			{
+				style.backgroundColor = _color;
+			}
 		}
 	}
 }

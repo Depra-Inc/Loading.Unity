@@ -75,6 +75,11 @@ namespace Depra.Loading
 
 		private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
 		{
+			if (scene.name != _sceneName)
+			{
+				return;
+			}
+
 			SceneManager.sceneLoaded -= OnSceneLoaded;
 			if (scene.IsValid())
 			{

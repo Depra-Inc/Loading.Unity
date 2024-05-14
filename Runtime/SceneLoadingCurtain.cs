@@ -5,65 +5,73 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Depra.Assets.Files;
 using Depra.Loading.Curtain;
 using Depra.Loading.Operations;
-using UnityEngine;
-using Object = UnityEngine.Object;
+using UnityEngine.SceneManagement;
 
 namespace Depra.Loading
 {
-	public sealed class UnityLoadingCurtain : ILoadingCurtain
+	public sealed class SceneLoadingCurtain : ILoadingCurtain
 	{
-		private readonly IAssetFile<LoadingCurtainView> _assetFile;
+		private readonly string _sceneName;
+		private readonly OverlayLoadingCurtain _overlayCurtain;
 
-		private LoadingCurtainView _view;
-		private LoadingCurtainView _original;
-
-		public UnityLoadingCurtain(IAssetFile<LoadingCurtainView> assetFile) => _assetFile = assetFile;
-
-		async Task ILoadingCurtain.Load(IEnumerable<ILoadingOperation> operations,
-			CancellationToken token)
+		public SceneLoadingCurtain(string sceneName, OverlayLoadingCurtain overlayCurtain)
 		{
-			if (_original == null)
-			{
-				_original = await _assetFile.LoadAsync(cancellationToken: token);
-			}
-
-			using var viewModel = new LoadingCurtainViewModel();
-			_view = Object.Instantiate(_original);
-			_view.Initialize(viewModel);
-
-			foreach (var operation in operations)
-			{
-				viewModel.Initialize(operation);
-				await operation.Load(OnProgress, token);
-			}
-
-			if (_view != null)
-			{
-				Object.Destroy(_view.gameObject);
-			}
-
-			return;
-
-			void OnProgress(float progress) => viewModel.Progress.Value = progress;
+			_sceneName = sceneName;
+			_overlayCurtain = overlayCurtain;
 		}
 
-		void ILoadingCurtain.Unload()
+		public async Task Load(IEnumerable<ILoadingOperation> operations, CancellationToken token)
 		{
-			if (_original)
+			await LoadScene(token);
+			_overlayCurtain.ViewModel.Completed += Unload;
+			await _overlayCurtain.Load(operations, token);
+		}
+
+		public void Unload()
+		{
+			_overlayCurtain.ViewModel.Completed -= Unload;
+			_overlayCurtain.Unload();
+			_ = UnloadScene(CancellationToken.None);
+		}
+
+		private async Task LoadScene(CancellationToken token)
+		{
+			var loadSceneOperation = SceneManager.LoadSceneAsync(_sceneName, LoadSceneMode.Additive);
+			if (loadSceneOperation == null)
 			{
-				_original = null;
+				throw new InvalidOperationException($"Scene '{_sceneName}' not found.");
 			}
 
-			try
+			loadSceneOperation.allowSceneActivation = true;
+			while (loadSceneOperation.isDone == false)
 			{
-				_assetFile.Unload();
+				if (token.IsCancellationRequested)
+				{
+					throw new TaskCanceledException();
+				}
+
+				await Task.Yield();
 			}
-			catch (Exception exception)
+		}
+
+		private async Task UnloadScene(CancellationToken token)
+		{
+			var unloadSceneOperation = SceneManager.UnloadSceneAsync(_sceneName);
+			if (unloadSceneOperation == null)
 			{
-				Debug.LogError(exception);
+				throw new InvalidOperationException($"Scene '{_sceneName}' not found.");
+			}
+
+			while (unloadSceneOperation.isDone == false)
+			{
+				if (token.IsCancellationRequested)
+				{
+					throw new TaskCanceledException();
+				}
+
+				await Task.Yield();
 			}
 		}
 	}

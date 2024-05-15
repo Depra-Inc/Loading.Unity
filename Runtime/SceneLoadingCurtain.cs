@@ -22,7 +22,7 @@ namespace Depra.Loading
 			_overlayCurtain = overlayCurtain;
 		}
 
-		public async Task Load(IEnumerable<ILoadingOperation> operations, CancellationToken token)
+		public async Task Load(Queue<ILoadingOperation> operations, CancellationToken token)
 		{
 			await LoadScene(token);
 			await _overlayCurtain.Load(operations, token);

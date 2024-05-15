@@ -35,9 +35,8 @@ namespace Depra.Loading
 		private void OnProgressChanged(float progress)
 		{
 			var target = _maxValue / 0.9f;
-			var current = progress / _viewModel.OperationsCount;
 			var maxDelta = _speed * Time.deltaTime;
-			_progressBar.value = Mathf.MoveTowards(current, target, maxDelta);
+			_progressBar.value = Mathf.MoveTowards(progress, target, maxDelta);
 		}
 	}
 }

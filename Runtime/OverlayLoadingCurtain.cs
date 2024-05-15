@@ -17,20 +17,23 @@ namespace Depra.Loading
 	{
 		private readonly IAssetFile<LoadingCurtainViewRoot> _assetFile;
 
+		private int _operationsCount;
+		private int _completedOperations;
 		private LoadingCurtainViewRoot _view;
 		private LoadingCurtainViewRoot _original;
 		private LoadingCurtainViewModel _viewModel;
 
 		public OverlayLoadingCurtain(IAssetFile<LoadingCurtainViewRoot> assetFile) => _assetFile = assetFile;
 
-		public async Task Load(IEnumerable<ILoadingOperation> operations, CancellationToken cancellationToken)
+		public async Task Load(Queue<ILoadingOperation> operations, CancellationToken cancellationToken)
 		{
 			if (_original == null)
 			{
 				_original = await _assetFile.LoadAsync(cancellationToken: cancellationToken);
 			}
 
-			_viewModel = new LoadingCurtainViewModel(operations);
+			_operationsCount = operations.Count;
+			_viewModel = new LoadingCurtainViewModel();
 			_view = Object.Instantiate(_original);
 			_view.Initialize(_viewModel);
 
@@ -38,6 +41,7 @@ namespace Depra.Loading
 			{
 				_viewModel.Description.Value = operation.Description;
 				await operation.Load(OnProgress, cancellationToken);
+				_completedOperations++;
 			}
 
 			await WaitForViewClosed(cancellationToken);
@@ -45,7 +49,10 @@ namespace Depra.Loading
 
 		public Task Unload(CancellationToken cancellationToken)
 		{
+			_operationsCount = 0;
+			_completedOperations = 0;
 			_viewModel?.Dispose();
+
 			if (_view != null)
 			{
 				Object.Destroy(_view.gameObject);
@@ -63,7 +70,8 @@ namespace Depra.Loading
 			return Task.CompletedTask;
 		}
 
-		private void OnProgress(float progress) => _viewModel.Progress.Value = progress;
+		private void OnProgress(float progress) =>
+			_viewModel.Progress.Value = progress * _completedOperations / _operationsCount;
 
 		private async Task WaitForViewClosed(CancellationToken token)
 		{

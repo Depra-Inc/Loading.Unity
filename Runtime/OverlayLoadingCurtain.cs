@@ -30,7 +30,7 @@ namespace Depra.Loading
 				_original = await _assetFile.LoadAsync(cancellationToken: cancellationToken);
 			}
 
-			_viewModel = new LoadingCurtainViewModel();
+			_viewModel = new LoadingCurtainViewModel(operations);
 			_view = Object.Instantiate(_original);
 			_view.Initialize(_viewModel);
 

@@ -10,6 +10,8 @@ namespace Depra.Loading
 	[RequireComponent(typeof(UIDocument))]
 	public sealed class LoadingCurtainProgressBar : LoadingCurtainView
 	{
+		[SerializeField] private float _speed = 0.5f;
+		[Min(0)] [SerializeField] private float _maxValue = 1;
 		[SerializeField] private string _bindingPath = "ProgressBar";
 
 		private ProgressBar _progressBar;
@@ -30,6 +32,12 @@ namespace Depra.Loading
 			_progressBar = GetComponent<UIDocument>().rootVisualElement.Q<ProgressBar>(_bindingPath);
 		}
 
-		private void OnProgressChanged(float progress) => _progressBar.value = progress;
+		private void OnProgressChanged(float progress)
+		{
+			var target = _maxValue / 0.9f;
+			var current = progress / _viewModel.OperationsCount;
+			var maxDelta = _speed * Time.deltaTime;
+			_progressBar.value = Mathf.MoveTowards(current, target, maxDelta);
+		}
 	}
 }

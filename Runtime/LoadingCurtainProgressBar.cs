@@ -23,7 +23,7 @@ namespace Depra.Loading
 		{
 			var current = _progressBar.value;
 			var target = _viewModel.Progress.Value;
-			_progressBar.value = Mathf.SmoothDamp(current, target, ref _velocity, _smoothTime);
+			_progressBar.value = Mathf.SmoothDamp(current, target, ref _velocity, _smoothTime, 1, Time.deltaTime);
 		}
 
 		public override void Initialize(LoadingCurtainViewModel viewModel)

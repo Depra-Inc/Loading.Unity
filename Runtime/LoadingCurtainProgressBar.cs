@@ -49,13 +49,6 @@ namespace Depra.Loading
 			var target = _viewModel.Progress.Value;
 			_progressBar.value = Mathf.SmoothDamp(current, target, ref _velocity, _smoothTime);
 
-			if (Mathf.Abs(_progressBar.value - target) < 0.01f)
-			{
-				_progressBar.value = target;
-				StopCoroutine(_coroutine);
-				_coroutine = null;
-			}
-
 			yield return null;
 		}
 	}

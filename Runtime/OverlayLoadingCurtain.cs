@@ -18,7 +18,7 @@ namespace Depra.Loading
 		private readonly IAssetFile<LoadingCurtainViewRoot> _assetFile;
 
 		private int _operationsCount;
-		private int _completedOperations;
+		private int _currentOperationNumber;
 		private LoadingCurtainViewRoot _view;
 		private LoadingCurtainViewRoot _original;
 		private LoadingCurtainViewModel _viewModel;
@@ -27,21 +27,23 @@ namespace Depra.Loading
 
 		public async Task Load(Queue<ILoadingOperation> operations, CancellationToken cancellationToken)
 		{
+			_currentOperationNumber = 0;
+			_operationsCount = operations.Count;
+
 			if (_original == null)
 			{
 				_original = await _assetFile.LoadAsync(cancellationToken: cancellationToken);
 			}
 
-			_operationsCount = operations.Count;
 			_viewModel = new LoadingCurtainViewModel();
 			_view = Object.Instantiate(_original);
 			_view.Initialize(_viewModel);
 
 			foreach (var operation in operations)
 			{
+				_currentOperationNumber++;
 				_viewModel.Description.Value = operation.Description;
 				await operation.Load(OnProgress, cancellationToken);
-				_completedOperations++;
 			}
 
 			await WaitForViewClosed(cancellationToken);
@@ -50,7 +52,7 @@ namespace Depra.Loading
 		public Task Unload(CancellationToken cancellationToken)
 		{
 			_operationsCount = 0;
-			_completedOperations = 0;
+			_currentOperationNumber = 0;
 			_viewModel?.Dispose();
 
 			if (_view != null)
@@ -71,7 +73,7 @@ namespace Depra.Loading
 		}
 
 		private void OnProgress(float progress) =>
-			_viewModel.Progress.Value = progress * _completedOperations / _operationsCount;
+			_viewModel.Progress.Value = progress * _currentOperationNumber / _operationsCount;
 
 		private async Task WaitForViewClosed(CancellationToken token)
 		{

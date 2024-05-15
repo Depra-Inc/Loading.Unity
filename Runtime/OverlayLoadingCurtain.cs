@@ -73,7 +73,7 @@ namespace Depra.Loading
 		}
 
 		private void OnProgress(float progress) =>
-			_viewModel.Progress.Value = progress * _currentOperationNumber / _operationsCount;
+			_viewModel.Progress.Value = (float) _currentOperationNumber / _operationsCount + progress / _operationsCount;
 
 		private async Task WaitForViewClosed(CancellationToken token)
 		{

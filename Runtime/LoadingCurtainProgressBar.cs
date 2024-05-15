@@ -10,6 +10,7 @@ namespace Depra.Loading
 	[RequireComponent(typeof(UIDocument))]
 	public sealed class LoadingCurtainProgressBar : LoadingCurtainView
 	{
+		[Min(0)] [SerializeField] private float _maxSpeed = float.MaxValue;
 		[Min(0)] [SerializeField] private float _smoothTime = 0.1f;
 		[SerializeField] private string _bindingPath = "ProgressBar";
 
@@ -19,12 +20,12 @@ namespace Depra.Loading
 
 		private void Awake() => enabled = false;
 
-		private void Update()
-		{
-			var current = _progressBar.value;
-			var target = _viewModel.Progress.Value;
-			_progressBar.value = Mathf.SmoothDamp(current, target, ref _velocity, _smoothTime, 1, Time.deltaTime);
-		}
+		private void Update() => _progressBar.value = Mathf.SmoothDamp(
+			_progressBar.value,
+			_viewModel.Progress.Value,
+			ref _velocity,
+			_smoothTime,
+			_maxSpeed);
 
 		public override void Initialize(LoadingCurtainViewModel viewModel)
 		{

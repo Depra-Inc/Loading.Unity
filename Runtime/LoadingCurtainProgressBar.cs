@@ -1,6 +1,7 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // © 2023-2024 Nikolay Melnikov <n.melnikov@depra.org>
 
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -14,25 +15,48 @@ namespace Depra.Loading
 		[SerializeField] private string _bindingPath = "ProgressBar";
 
 		private float _velocity;
+		private Coroutine _coroutine;
 		private ProgressBar _progressBar;
 		private LoadingCurtainViewModel _viewModel;
 
 		private void OnDestroy()
 		{
-			if (_viewModel != null)
+			if (_coroutine == null)
 			{
-				_viewModel.Progress.Changed -= OnProgressChanged;
+				return;
 			}
+
+			StopCoroutine(_coroutine);
+			_coroutine = null;
 		}
 
 		public override void Initialize(LoadingCurtainViewModel viewModel)
 		{
 			_viewModel = viewModel;
-			_viewModel.Progress.Changed += OnProgressChanged;
 			_progressBar = GetComponent<UIDocument>().rootVisualElement.Q<ProgressBar>(_bindingPath);
+
+			if (_coroutine != null)
+			{
+				StopCoroutine(_coroutine);
+			}
+
+			_coroutine = StartCoroutine(UpdateProgressBar());
 		}
 
-		private void OnProgressChanged(float progress) => _progressBar.value =
-			Mathf.SmoothDamp(_progressBar.value, progress, ref _velocity, _smoothTime);
+		private IEnumerator UpdateProgressBar()
+		{
+			var current = _progressBar.value;
+			var target = _viewModel.Progress.Value;
+			_progressBar.value = Mathf.SmoothDamp(current, target, ref _velocity, _smoothTime);
+
+			if (Mathf.Abs(_progressBar.value - target) < 0.01f)
+			{
+				_progressBar.value = target;
+				StopCoroutine(_coroutine);
+				_coroutine = null;
+			}
+
+			yield return null;
+		}
 	}
 }

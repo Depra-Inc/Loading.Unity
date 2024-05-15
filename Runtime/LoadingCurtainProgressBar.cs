@@ -10,7 +10,6 @@ namespace Depra.Loading
 	[RequireComponent(typeof(UIDocument))]
 	public sealed class LoadingCurtainProgressBar : LoadingCurtainView
 	{
-		[Min(0)] [SerializeField] private float _maxSpeed = float.MaxValue;
 		[Min(0)] [SerializeField] private float _smoothTime = 0.1f;
 		[SerializeField] private string _bindingPath = "ProgressBar";
 
@@ -24,8 +23,7 @@ namespace Depra.Loading
 			_progressBar.value,
 			_viewModel.Progress.Value,
 			ref _velocity,
-			_smoothTime,
-			_maxSpeed);
+			_smoothTime);
 
 		public override void Initialize(LoadingCurtainViewModel viewModel)
 		{

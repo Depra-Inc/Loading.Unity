@@ -17,9 +17,5 @@ namespace Depra.Loading
 			Progress.Dispose();
 			Description.Dispose();
 		}
-
-		internal bool NeedToClose { get; private set; }
-
-		public void Close() => NeedToClose = true;
 	}
 }

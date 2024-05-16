@@ -1,6 +1,7 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // © 2023-2024 Nikolay Melnikov <n.melnikov@depra.org>
 
+using Depra.Expectation;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -14,21 +15,28 @@ namespace Depra.Loading
 		[SerializeField] private string _bindingPath = "ProgressBar";
 
 		private float _velocity;
-		private ProgressBar _progressBar;
+		private ProgressBar _bar;
+		private Expectant _filled;
 		private LoadingCurtainViewModel _viewModel;
 
 		private void Awake() => enabled = false;
 
-		private void Update() => _progressBar.value = Mathf.SmoothDamp(
-			_progressBar.value,
-			_viewModel.Progress.Value,
-			ref _velocity,
-			_smoothTime);
+		private void Update()
+		{
+			_bar.value = Mathf.SmoothDamp(_bar.value, _viewModel.Progress.Value, ref _velocity, _smoothTime);
+			if (_bar.value >= 1)
+			{
+				_filled.SetReady();
+			}
+		}
 
-		public override void Initialize(LoadingCurtainViewModel viewModel)
+		private void OnDestroy() => _filled?.Dispose();
+
+		public override void Initialize(LoadingCurtainViewModel viewModel, IGroupExpectant expectant)
 		{
 			_viewModel = viewModel;
-			_progressBar = GetComponent<UIDocument>().rootVisualElement.Q<ProgressBar>(_bindingPath);
+			expectant.With(_filled = new Expectant());
+			_bar = GetComponent<UIDocument>().rootVisualElement.Q<ProgressBar>(_bindingPath);
 			enabled = true;
 		}
 	}

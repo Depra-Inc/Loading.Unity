@@ -1,6 +1,7 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // © 2023-2024 Nikolay Melnikov <n.melnikov@depra.org>
 
+using Depra.Expectation;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -23,7 +24,7 @@ namespace Depra.Loading
 			}
 		}
 
-		public override void Initialize(LoadingCurtainViewModel viewModel)
+		public override void Initialize(LoadingCurtainViewModel viewModel, IGroupExpectant expectant)
 		{
 			_viewModel = viewModel;
 			_viewModel.Progress.Changed += OnProgressChanged;

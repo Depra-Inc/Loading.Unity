@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Depra.Assets.Files;
+using Depra.Expectation;
 using Depra.Loading.Curtain;
 using Depra.Loading.Operations;
 using UnityEngine;
@@ -19,6 +20,7 @@ namespace Depra.Loading
 
 		private int _operationIndex;
 		private int _operationsCount;
+		private IExpectant _viewReady;
 		private LoadingCurtainViewRoot _view;
 		private LoadingCurtainViewRoot _original;
 		private LoadingCurtainViewModel _viewModel;
@@ -30,14 +32,16 @@ namespace Depra.Loading
 			_operationIndex = 0;
 			_operationsCount = operations.Count;
 
-			if (_original == null)
-			{
-				_original = await _assetFile.LoadAsync(cancellationToken: cancellationToken);
-			}
-
+			_original = await FetchViewOriginal(cancellationToken);
 			_viewModel = new LoadingCurtainViewModel();
 			_view = Object.Instantiate(_original);
-			_view.Initialize(_viewModel);
+
+			var operationsReady = new Expectant();
+			var viewExpectant = new GroupExpectant.And();
+			viewExpectant.With(operationsReady);
+
+			_view.Initialize(_viewModel, viewExpectant);
+			_viewReady = viewExpectant.Build();
 
 			foreach (var operation in operations)
 			{
@@ -46,6 +50,7 @@ namespace Depra.Loading
 				_operationIndex++;
 			}
 
+			operationsReady.SetReady();
 			await WaitForViewClosed(cancellationToken);
 		}
 
@@ -54,6 +59,7 @@ namespace Depra.Loading
 			_operationIndex = 0;
 			_operationsCount = 0;
 			_viewModel?.Dispose();
+			_viewReady?.Dispose();
 
 			if (_view != null)
 			{
@@ -85,9 +91,19 @@ namespace Depra.Loading
 			return normalizedProgress;
 		}
 
+		private async Task<LoadingCurtainViewRoot> FetchViewOriginal(CancellationToken token)
+		{
+			if (_original == null)
+			{
+				return await _assetFile.LoadAsync(cancellationToken: token);
+			}
+
+			return _original;
+		}
+
 		private async Task WaitForViewClosed(CancellationToken token)
 		{
-			while (_viewModel.NeedToClose == false)
+			while (_viewReady.IsReady() == false)
 			{
 				if (token.IsCancellationRequested)
 				{

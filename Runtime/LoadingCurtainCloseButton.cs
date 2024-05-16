@@ -1,21 +1,26 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // © 2023-2024 Nikolay Melnikov <n.melnikov@depra.org>
 
+using Depra.Expectation;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Depra.Loading
 {
+	[DisallowMultipleComponent]
 	[RequireComponent(typeof(UIDocument))]
-	internal sealed class LoadingContinueButton : LoadingCurtainClose
+	internal sealed class LoadingContinueButton : LoadingCurtainView
 	{
 		[SerializeField] private string _bindingPath = "ClickToContinue";
 
 		private Button _button;
+		private Expectant _buttonClicked;
 		private LoadingCurtainViewModel _viewModel;
 
 		private void OnDestroy()
 		{
+			_buttonClicked?.Dispose();
+
 			if (_button != null)
 			{
 				_button.clicked -= OnClicked;
@@ -27,10 +32,11 @@ namespace Depra.Loading
 			}
 		}
 
-		public override void Initialize(LoadingCurtainViewModel viewModel)
+		public override void Initialize(LoadingCurtainViewModel viewModel, IGroupExpectant expectant)
 		{
 			_viewModel = viewModel;
 			_viewModel.Progress.Changed += OnProgressChanged;
+			expectant.With(_buttonClicked = new Expectant());
 
 			var document = GetComponent<UIDocument>();
 			var rootElement = document.rootVisualElement;
@@ -47,7 +53,7 @@ namespace Depra.Loading
 		private void OnClicked()
 		{
 			_button.SetEnabled(false);
-			_viewModel.Close();
+			_buttonClicked.SetReady();
 		}
 
 		private void OnProgressChanged(float progress)

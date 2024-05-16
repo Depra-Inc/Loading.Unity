@@ -1,6 +1,7 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // © 2023-2024 Nikolay Melnikov <n.melnikov@depra.org>
 
+using Depra.Expectation;
 using UnityEngine;
 
 namespace Depra.Loading
@@ -10,11 +11,11 @@ namespace Depra.Loading
 	{
 		[SerializeField] private LoadingCurtainView[] _views;
 
-		public void Initialize(LoadingCurtainViewModel viewModel)
+		public void Initialize(LoadingCurtainViewModel viewModel, IGroupExpectant expectant)
 		{
 			foreach (var view in _views)
 			{
-				view.Initialize(viewModel);
+				view.Initialize(viewModel, expectant);
 			}
 		}
 #if UNITY_EDITOR

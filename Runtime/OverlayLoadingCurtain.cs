@@ -46,7 +46,7 @@ namespace Depra.Loading
 			foreach (var operation in operations)
 			{
 				_viewModel.Description.Value = operation.Description;
-				await operation.Load(OnProgress, cancellationToken);
+				await operation.Load(new Progress<float>(OnProgress), cancellationToken);
 				_operationIndex++;
 			}
 
@@ -91,15 +91,8 @@ namespace Depra.Loading
 			return normalizedProgress;
 		}
 
-		private async Task<LoadingCurtainViewRoot> FetchViewOriginal(CancellationToken token)
-		{
-			if (_original == null)
-			{
-				return await _assetFile.LoadAsync(cancellationToken: token);
-			}
-
-			return _original;
-		}
+		private async Task<LoadingCurtainViewRoot> FetchViewOriginal(CancellationToken token) =>
+			_original == null ? await _assetFile.LoadAsync(cancellationToken: token) : _original;
 
 		private async Task WaitForViewClosed(CancellationToken token)
 		{

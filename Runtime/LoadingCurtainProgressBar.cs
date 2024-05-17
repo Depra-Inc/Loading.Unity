@@ -14,6 +14,7 @@ namespace Depra.Loading
 		[Min(0)] [SerializeField] private float _smoothTime = 0.1f;
 		[SerializeField] private string _bindingPath = "ProgressBar";
 
+		private float _target;
 		private float _velocity;
 		private ProgressBar _bar;
 		private Expectant _filled;
@@ -23,21 +24,39 @@ namespace Depra.Loading
 
 		private void Update()
 		{
-			_bar.value = Mathf.SmoothDamp(_bar.value, _viewModel.Progress.Value, ref _velocity, _smoothTime);
+			_bar.value = Mathf.SmoothDamp(_bar.value, _target, ref _velocity, _smoothTime);
 			if (_bar.value >= 1)
 			{
-				_filled.SetReady();
+				MarkAsFilled();
 			}
 		}
 
-		private void OnDestroy() => _filled?.Dispose();
+		private void OnDestroy()
+		{
+			_filled?.Dispose();
+			if (_viewModel != null)
+			{
+				_viewModel.Progress.Changed -= OnProgressChanged;
+			}
+		}
 
 		public override void Initialize(LoadingCurtainViewModel viewModel, IGroupExpectant expectant)
 		{
 			_viewModel = viewModel;
+			_viewModel.Progress.Changed += OnProgressChanged;
+
 			expectant.With(_filled = new Expectant());
 			_bar = GetComponent<UIDocument>().rootVisualElement.Q<ProgressBar>(_bindingPath);
+
 			enabled = true;
 		}
+
+		private void MarkAsFilled()
+		{
+			enabled = false;
+			_filled.SetReady();
+		}
+
+		private void OnProgressChanged(float value) => _target = value;
 	}
 }

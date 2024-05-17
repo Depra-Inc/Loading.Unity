@@ -25,7 +25,7 @@ namespace Depra.Loading
 		private void Update()
 		{
 			_bar.value = Mathf.SmoothDamp(_bar.value, _target, ref _velocity, _smoothTime);
-			if (_bar.value >= 1)
+			if (Mathf.Approximately(_bar.value, 1) || _bar.value >= 1)
 			{
 				MarkAsFilled();
 			}

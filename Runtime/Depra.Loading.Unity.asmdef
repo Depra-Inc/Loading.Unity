@@ -9,8 +9,8 @@
     "precompiledReferences": [
         "Depra.Assets.dll",
         "Depra.Loading.dll",
-        "Depra.Expectation.dll",
-        "Depra.Observables.dll"
+        "Depra.Reactive.dll",
+        "Depra.Expectation.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],

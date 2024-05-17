@@ -3,7 +3,7 @@
 
 using System;
 using Depra.Loading.Operations;
-using Depra.Observables;
+using Depra.Reactive;
 
 namespace Depra.Loading
 {

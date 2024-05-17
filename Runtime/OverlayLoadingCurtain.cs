@@ -37,8 +37,8 @@ namespace Depra.Loading
 			_view = Object.Instantiate(_original);
 
 			var operationsReady = new Expectant();
-			var viewExpectant = new GroupExpectant.And();
-			viewExpectant.With(operationsReady);
+			var viewExpectant = new GroupExpectant.And()
+				.With(operationsReady);
 
 			_view.Initialize(_viewModel, viewExpectant);
 			_viewReady = viewExpectant.Build();

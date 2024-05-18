@@ -7,7 +7,6 @@ using UnityEngine.UIElements;
 
 namespace Depra.Loading
 {
-	[DisallowMultipleComponent]
 	[RequireComponent(typeof(UIDocument))]
 	public sealed class LoadingCurtainProgressBar : LoadingCurtainView
 	{
@@ -33,15 +32,6 @@ namespace Depra.Loading
 			_bar.value = delta > _maxDelta ? _bar.value + delta : _target;
 		}
 
-		private void OnDestroy()
-		{
-			_filled?.Dispose();
-			if (_viewModel != null)
-			{
-				_viewModel.Progress.Changed -= OnProgressChanged;
-			}
-		}
-
 		public override void Initialize(LoadingCurtainViewModel viewModel, IGroupExpectant expectant)
 		{
 			_viewModel = viewModel;
@@ -50,6 +40,15 @@ namespace Depra.Loading
 			expectant.With(_filled = new Expectant());
 			_bar = GetComponent<UIDocument>().rootVisualElement.Q<ProgressBar>(_bindingPath);
 			enabled = true;
+		}
+
+		public override void TearDown()
+		{
+			_filled?.Dispose();
+			if (_viewModel != null)
+			{
+				_viewModel.Progress.Changed -= OnProgressChanged;
+			}
 		}
 
 		private void OnProgressChanged(float value) => _target = value;

@@ -27,12 +27,12 @@ namespace Depra.Loading
 
 		public OverlayLoadingCurtain(IAssetFile<LoadingCurtainViewRoot> assetFile) => _assetFile = assetFile;
 
-		public async Task Load(Queue<ILoadingOperation> operations, CancellationToken cancellationToken)
+		public async Task Load(Queue<ILoadingOperation> operations, CancellationToken token)
 		{
 			_operationIndex = 0;
 			_operationsCount = operations.Count;
 
-			_original = await FetchViewOriginal(cancellationToken);
+			_original ??= await _assetFile.LoadAsync(cancellationToken: token);
 			_viewModel = new LoadingCurtainViewModel();
 			_view = Object.Instantiate(_original);
 
@@ -46,23 +46,24 @@ namespace Depra.Loading
 			foreach (var operation in operations)
 			{
 				_viewModel.Description.Value = operation.Description;
-				await operation.Load(new Progress<float>(OnProgress), cancellationToken);
+				await operation.Load(new Progress<float>(OnProgress), token);
 				_operationIndex++;
 			}
 
 			operationsReady.SetReady();
-			await WaitForViewClosed(cancellationToken);
+			await WaitForViewClosed(token);
 		}
 
-		public Task Unload(CancellationToken cancellationToken)
+		public Task Unload(CancellationToken token)
 		{
 			_operationIndex = 0;
 			_operationsCount = 0;
 			_viewModel?.Dispose();
 			_viewReady?.Dispose();
 
-			if (_view != null)
+			if (_view)
 			{
+				_view.TearDown();
 				Object.Destroy(_view.gameObject);
 			}
 
@@ -78,21 +79,16 @@ namespace Depra.Loading
 			return Task.CompletedTask;
 		}
 
-		private void OnProgress(float progress) => _viewModel.Progress.Value = NormalizeProgress(progress);
-
-		private float NormalizeProgress(float progress)
+		private void OnProgress(float progress)
 		{
-			var normalizedProgress = (_operationIndex + progress) / _operationsCount;
-			if (Mathf.Abs(normalizedProgress - 1) < 0.01f)
+			var normalized = (_operationIndex + progress) / _operationsCount;
+			if (Mathf.Abs(normalized - 1) < 0.01f)
 			{
-				normalizedProgress = 1;
+				normalized = 1;
 			}
 
-			return normalizedProgress;
+			_viewModel.Progress.Value = normalized;
 		}
-
-		private async Task<LoadingCurtainViewRoot> FetchViewOriginal(CancellationToken token) =>
-			_original == null ? await _assetFile.LoadAsync(cancellationToken: token) : _original;
 
 		private async Task WaitForViewClosed(CancellationToken token)
 		{

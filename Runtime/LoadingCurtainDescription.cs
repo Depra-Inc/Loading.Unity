@@ -17,19 +17,19 @@ namespace Depra.Loading
 		private UIDocument _document;
 		private LoadingCurtainViewModel _viewModel;
 
-		private void OnDestroy()
-		{
-			if (_viewModel != null)
-			{
-				_viewModel.Description.Changed -= OnDescriptionChanged;
-			}
-		}
-
 		public override void Initialize(LoadingCurtainViewModel viewModel, IGroupExpectant expectant)
 		{
 			_viewModel = viewModel;
 			_viewModel.Description.Changed += OnDescriptionChanged;
 			_label = GetComponent<UIDocument>().rootVisualElement.Q<Label>(_bindingPath);
+		}
+
+		public override void TearDown()
+		{
+			if (_viewModel != null)
+			{
+				_viewModel.Description.Changed -= OnDescriptionChanged;
+			}
 		}
 
 		private void OnDescriptionChanged(OperationDescription description) => _label.text = description.Text;

@@ -8,6 +8,10 @@ namespace Depra.Loading
 {
 	public abstract class LoadingCurtainView : MonoBehaviour
 	{
+		protected private void OnDestroy() { }
+
 		public abstract void Initialize(LoadingCurtainViewModel viewModel, IGroupExpectant expectant);
+
+		public virtual void TearDown() { }
 	}
 }

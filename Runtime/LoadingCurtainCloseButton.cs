@@ -17,7 +17,23 @@ namespace Depra.Loading
 		private Expectant _buttonClicked;
 		private LoadingCurtainViewModel _viewModel;
 
-		private void OnDestroy()
+		public override void Initialize(LoadingCurtainViewModel viewModel, IGroupExpectant expectant)
+		{
+			_viewModel = viewModel;
+			_viewModel.Progress.Changed += OnProgressChanged;
+
+			expectant.With(_buttonClicked = new Expectant());
+			_button = GetComponent<UIDocument>().rootVisualElement.Q<Button>(_bindingPath);
+			if (_button == null)
+			{
+				return;
+			}
+
+			_button.SetEnabled(false);
+			_button.clicked += OnClicked;
+		}
+
+		public override void TearDown()
 		{
 			_buttonClicked?.Dispose();
 
@@ -32,33 +48,17 @@ namespace Depra.Loading
 			}
 		}
 
-		public override void Initialize(LoadingCurtainViewModel viewModel, IGroupExpectant expectant)
-		{
-			_viewModel = viewModel;
-			_viewModel.Progress.Changed += OnProgressChanged;
-			expectant.With(_buttonClicked = new Expectant());
-
-			var document = GetComponent<UIDocument>();
-			var rootElement = document.rootVisualElement;
-			_button = rootElement.Q<Button>(_bindingPath);
-			if (_button == null)
-			{
-				return;
-			}
-
-			_button.SetEnabled(false);
-			_button.clicked += OnClicked;
-		}
-
 		private void OnClicked()
 		{
+			_button.clicked -= OnClicked;
 			_button.SetEnabled(false);
 			_buttonClicked.SetReady();
 		}
 
 		private void OnProgressChanged(float progress)
 		{
-			if (Mathf.Approximately(progress, 1))
+			var completed = Mathf.Approximately(progress, 1) || progress >= 1;
+			if (_button.enabledSelf == false && completed)
 			{
 				_button.SetEnabled(true);
 			}

@@ -16,19 +16,19 @@ namespace Depra.Loading
 		private Label _label;
 		private LoadingCurtainViewModel _viewModel;
 
-		private void OnDestroy()
-		{
-			if (_viewModel != null)
-			{
-				_viewModel.Progress.Changed -= OnProgressChanged;
-			}
-		}
-
 		public override void Initialize(LoadingCurtainViewModel viewModel, IGroupExpectant expectant)
 		{
 			_viewModel = viewModel;
 			_viewModel.Progress.Changed += OnProgressChanged;
 			_label = GetComponent<UIDocument>().rootVisualElement.Q<Label>(_bindingPath);
+		}
+
+		public override void TearDown()
+		{
+			if (_viewModel != null)
+			{
+				_viewModel.Progress.Changed -= OnProgressChanged;
+			}
 		}
 
 		private void OnProgressChanged(float value) =>

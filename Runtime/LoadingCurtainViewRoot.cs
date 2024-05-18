@@ -18,6 +18,14 @@ namespace Depra.Loading
 				view.Initialize(viewModel, expectant);
 			}
 		}
+
+		public void TearDown()
+		{
+			foreach (var view in _views)
+			{
+				view.TearDown();
+			}
+		}
 #if UNITY_EDITOR
 		[ContextMenu(nameof(Refill))]
 		private void Refill()

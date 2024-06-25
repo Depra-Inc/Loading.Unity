@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Depra.Assets.Files;
+using Depra.Asset.Files;
 using Depra.Expectation;
 using Depra.Loading.Curtain;
 using Depra.Loading.Operations;

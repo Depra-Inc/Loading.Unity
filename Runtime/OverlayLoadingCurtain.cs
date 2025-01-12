@@ -1,11 +1,11 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
-// © 2023-2024 Nikolay Melnikov <n.melnikov@depra.org>
+// © 2023-2025 Nikolay Melnikov <n.melnikov@depra.org>
 
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Depra.Assets.Files;
+using Depra.Assets;
 using Depra.Expectation;
 using Depra.Loading.Curtain;
 using Depra.Loading.Operations;
@@ -32,7 +32,7 @@ namespace Depra.Loading
 			_operationIndex = 0;
 			_operationsCount = operations.Count;
 
-			_original ??= await _assetFile.LoadAsync(cancellationToken: token);
+			_original ??= await _assetFile.LoadAsync(cancellation: token);
 			_viewModel = new LoadingCurtainViewModel();
 			_view = Object.Instantiate(_original);
 

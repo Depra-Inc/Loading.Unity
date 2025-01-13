@@ -10,6 +10,7 @@
         "Depra.Assets.dll",
         "Depra.Loading.dll",
         "Depra.Reactive.dll",
+        "Depra.Threading.dll",
         "Depra.Expectation.dll"
     ],
     "autoReferenced": true,

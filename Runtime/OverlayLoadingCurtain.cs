@@ -7,8 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Depra.Assets;
 using Depra.Expectation;
-using Depra.Loading.Curtain;
-using Depra.Loading.Operations;
+using Depra.Threading;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -27,7 +26,7 @@ namespace Depra.Loading
 
 		public OverlayLoadingCurtain(IAssetFile<LoadingCurtainViewRoot> assetFile) => _assetFile = assetFile;
 
-		public async Task Load(Queue<ILoadingOperation> operations, CancellationToken token)
+		public async ITask Load(Queue<ILoadingOperation> operations, CancellationToken token)
 		{
 			_operationIndex = 0;
 			_operationsCount = operations.Count;
@@ -54,7 +53,7 @@ namespace Depra.Loading
 			await WaitForViewClosed(token);
 		}
 
-		public Task Unload(CancellationToken token)
+		public ITask Unload(CancellationToken token)
 		{
 			_operationIndex = 0;
 			_operationsCount = 0;
@@ -76,7 +75,7 @@ namespace Depra.Loading
 				Debug.LogError(exception);
 			}
 
-			return Task.CompletedTask;
+			return Task.CompletedTask.AsITask();
 		}
 
 		private void OnProgress(float progress)

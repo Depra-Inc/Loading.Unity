@@ -1,12 +1,11 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
-// © 2023-2024 Nikolay Melnikov <n.melnikov@depra.org>
+// © 2023-2025 Nikolay Melnikov <n.melnikov@depra.org>
 
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Depra.Loading.Curtain;
-using Depra.Loading.Operations;
+using Depra.Threading;
 using UnityEngine.SceneManagement;
 
 namespace Depra.Loading
@@ -22,19 +21,19 @@ namespace Depra.Loading
 			_overlayCurtain = overlayCurtain;
 		}
 
-		public async Task Load(Queue<ILoadingOperation> operations, CancellationToken token)
+		public async ITask Load(Queue<ILoadingOperation> operations, CancellationToken token)
 		{
 			await LoadScene(token);
 			await _overlayCurtain.Load(operations, token);
 		}
 
-		public async Task Unload(CancellationToken cancellationToken)
+		public async ITask Unload(CancellationToken cancellationToken)
 		{
 			await _overlayCurtain.Unload(cancellationToken);
 			await UnloadScene(cancellationToken);
 		}
 
-		private async Task LoadScene(CancellationToken token)
+		private async ITask LoadScene(CancellationToken token)
 		{
 			var operation = SceneManager.LoadSceneAsync(_sceneName, LoadSceneMode.Additive);
 			if (operation == null)
@@ -54,7 +53,7 @@ namespace Depra.Loading
 			}
 		}
 
-		private async Task UnloadScene(CancellationToken token)
+		private async ITask UnloadScene(CancellationToken token)
 		{
 			var operation = SceneManager.UnloadSceneAsync(_sceneName);
 			if (operation == null)

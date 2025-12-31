@@ -46,6 +46,7 @@ namespace Depra.Loading
 			{
 				_viewModel.Description.Value = operation.Description;
 				await operation.Load(new Progress<float>(OnProgress), token);
+				OnProgress(1f);
 				_operationIndex++;
 			}
 
@@ -80,18 +81,14 @@ namespace Depra.Loading
 
 		private void OnProgress(float progress)
 		{
+			progress = Mathf.Clamp01(progress);
 			var normalized = (_operationIndex + progress) / _operationsCount;
-			if (Mathf.Abs(normalized - 1) < 0.01f)
-			{
-				normalized = 1;
-			}
-
 			_viewModel.Progress.Value = normalized;
 		}
 
 		private async Task WaitForViewClosed(CancellationToken token)
 		{
-			while (_viewReady.IsReady() == false)
+			while (!_viewReady.IsReady())
 			{
 				if (token.IsCancellationRequested)
 				{

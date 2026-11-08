@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Depra.Expectation;
 using Depra.Threading;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Depra.Loading
@@ -23,67 +25,82 @@ namespace Depra.Loading
 
 		public async ITask Load(Queue<ILoadingOperation> operations, CancellationToken token)
 		{
-			await LoadScene(token);
-			await _overlayCurtain.Load(operations, token);
+			var operationsReady = new Expectant();
+			await _overlayCurtain.Prepare(operations, operationsReady, token);
+			await LoadScene();
+			_overlayCurtain.MoveViewTo(SceneManager.GetSceneByName(_sceneName));
+			await _overlayCurtain.LoadInternal(operations, operationsReady, token);
 		}
 
 		public async ITask Unload(CancellationToken cancellationToken)
 		{
 			await _overlayCurtain.Unload(cancellationToken);
-			await UnloadScene(cancellationToken);
+			await UnloadScene();
 		}
 
-		private async ITask LoadScene(CancellationToken token)
+		private async ITask LoadScene()
 		{
-			var operation = SceneManager.LoadSceneAsync(_sceneName, LoadSceneMode.Additive);
-			if (operation == null)
+			if (!Application.CanStreamedLevelBeLoaded(_sceneName))
 			{
-				throw new InvalidOperationException($"Scene '{_sceneName}' not found.");
+				throw new InvalidOperationException($"Scene '{_sceneName}' is not in build settings.");
 			}
 
-			SceneManager.sceneLoaded += OnSceneLoaded;
-			while (operation.isDone == false)
+			try
 			{
-				if (token.IsCancellationRequested)
-				{
-					throw new TaskCanceledException();
-				}
+				var operation = SceneManager.LoadSceneAsync(_sceneName, LoadSceneMode.Additive);
+				await WaitForOperation(operation);
+			}
+			catch
+			{
+				await TryUnloadScene();
+				CreateEmptyScene();
+			}
 
-				await Task.Yield();
+			var scene = SceneManager.GetSceneByName(_sceneName);
+			if (scene.IsValid())
+			{
+				SceneManager.SetActiveScene(scene);
 			}
 		}
 
-		private async ITask UnloadScene(CancellationToken token)
+		private async ITask UnloadScene()
 		{
+			var scene = SceneManager.GetSceneByName(_sceneName);
+			if (!scene.isLoaded)
+			{
+				return;
+			}
+
 			var operation = SceneManager.UnloadSceneAsync(_sceneName);
 			if (operation == null)
 			{
 				throw new InvalidOperationException($"Scene '{_sceneName}' not found.");
 			}
 
-			while (operation.isDone == false)
-			{
-				if (token.IsCancellationRequested)
-				{
-					throw new TaskCanceledException();
-				}
+			await WaitForOperation(operation);
+		}
 
+		private async ITask TryUnloadScene()
+		{
+			var scene = SceneManager.GetSceneByName(_sceneName);
+			if (scene.isLoaded)
+			{
+				await SceneManager.UnloadSceneAsync(scene);
+			}
+		}
+
+		private static async ITask WaitForOperation(AsyncOperation operation)
+		{
+			while (!operation.isDone)
+			{
 				await Task.Yield();
 			}
 		}
 
-		private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+		private void CreateEmptyScene()
 		{
-			if (scene.name != _sceneName)
-			{
-				return;
-			}
-
-			SceneManager.sceneLoaded -= OnSceneLoaded;
-			if (scene.IsValid())
-			{
-				SceneManager.SetActiveScene(scene);
-			}
+			var scene = SceneManager.CreateScene(_sceneName);
+			SceneManager.SetActiveScene(scene);
 		}
 	}
 }

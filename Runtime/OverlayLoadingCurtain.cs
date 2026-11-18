@@ -58,10 +58,11 @@ namespace Depra.Loading
 		{
 			_operationIndex = 0;
 			_operationsCount = operations.Count;
+			var progress = new SynchronousProgress(OnProgress);
 			foreach (var operation in operations)
 			{
 				_viewModel.Description.Value = operation.Description;
-				await operation.Load(new Progress<float>(OnProgress), token);
+				await operation.Load(progress, token);
 				OnProgress(1f);
 				_operationIndex++;
 			}
@@ -121,6 +122,14 @@ namespace Depra.Loading
 
 				await Task.Yield();
 			}
+		}
+
+		private sealed class SynchronousProgress : IProgress<float>
+		{
+			private readonly Action<float> _report;
+			public SynchronousProgress(Action<float> report) => _report = report;
+
+			void IProgress<float>.Report(float value) => _report(value);
 		}
 	}
 }
